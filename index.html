@@ -6,10 +6,11 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge" />
     <title>Task Manager</title>
     <link rel="stylesheet" href="app.css" />
-    <script src="dist/app.js" defer></script>
+    <script src="src/app.js" defer></script>
   </head>
   <body>
-    <template id="project-input">
+
+    <template id="task-input">
       <form>
         <div class="form-control">
           <label for="title">Title</label>
@@ -20,23 +21,26 @@
           <textarea id="description" rows="3"></textarea>
         </div>
         <div class="form-control">
-          <label for="people">People</label>
+          <label for="people">Deadline</label>
           <input type="number" id="people" step="1" min="0" max="10" />
         </div>
-        <button type="submit">ADD PROJECT</button>
+        <button type="submit">ADD TASK</button>
       </form>
     </template>
     <template id="single-project">
       <li></li>
     </template>
-    <template id="project-list">
-      <section class="projects">
+
+    <template id="task-list">
+      <section class="tasks">
         <header>
           <h2></h2>
         </header>
         <ul></ul>
       </section>
     </template>
+
+
     <div id="app"></div>
   </body>
 </html>

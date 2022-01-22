@@ -26,7 +26,7 @@ textarea {
   font: inherit;
   padding: 0.2rem 0.4rem;
   width: 100%;
-  max-width: 30rem;
+  
   border: 1px solid #ccc;
 }
 
@@ -36,10 +36,21 @@ textarea:focus {
   background: #fff5f9;
 }
 
+#app {
+ width: 100vw;
+  display: flex;
+  justify-content: center;
+  
+}
+
+#app form {
+ width: 50%;
+}
+
 button {
   font: inherit;
-  background: #ff0062;
-  border: 1px solid #ff0062;
+  background: #1A5684;
+  border: 1px solid #1A5684;
   cursor: pointer;
   color: white;
   padding: 0.75rem 1rem;
