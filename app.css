@@ -8,6 +8,7 @@ html {
 
 body {
   margin: 0;
+  height: 100vh;
 }
 
 label,
@@ -38,13 +39,15 @@ textarea:focus {
 
 #app {
  width: 100vw;
+ height: 100%;
   display: flex;
-  justify-content: center;
+  flex-direction: column;
+ align-items: center;
   
 }
 
 #app form {
- width: 50%;
+ width: 60%;
 }
 
 button {
@@ -133,6 +136,17 @@ button:active {
 #user-input {
   margin: 1rem;
   padding: 1rem;
-  border: 1px solid #ff0062;
+  border: 2px solid #1A5684;
   background: #f7f7f7;
+}
+
+.minCharacters {
+  font-size: 0.7rem;
+  margin: 0;
+  padding: 0;
+}
+
+.form-control label {
+  margin: 0;
+  padding: 0;
 }

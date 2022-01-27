@@ -14,15 +14,17 @@
       <form>
         <div class="form-control">
           <label for="title">Title</label>
+          <span class = "minCharacters">Min 5 characters</span>
           <input type="text" id="title" />
         </div>
         <div class="form-control">
           <label for="description">Description</label>
+          <span class = "minCharacters">Min 5 and max 120 characters</span>
           <textarea id="description" rows="3"></textarea>
         </div>
         <div class="form-control">
           <label for="people">Deadline</label>
-          <input type="number" id="people" step="1" min="0" max="10" />
+          <input type="date" id="date"/>
         </div>
         <button type="submit">ADD TASK</button>
       </form>
@@ -41,6 +43,8 @@
     </template>
 
 
-    <div id="app"></div>
+    <div id="app">
+      <h2>Task manager</h2>
+    </div>
   </body>
 </html>
