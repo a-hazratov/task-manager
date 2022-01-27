@@ -45,6 +45,16 @@ class TaskInput {
 
 
     private render() {
+        let date = new Date();
+        function getCurrentMonth() {
+            if(+(date.getMonth() + 1) < 10) {
+                return `0${date.getMonth() + 1}`
+            } else {
+                return `${date.getMonth() + 1}`
+            }
+        }
+        const currentDate = `${date.getFullYear()}-${getCurrentMonth()}-${date.getDate()}`
+        this.dateInput.min = currentDate;
         this.hostElement.insertAdjacentElement('beforeend', this.element)
         //this.hostElement.appendChild(this.element)
     }
