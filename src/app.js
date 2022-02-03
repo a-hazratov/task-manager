@@ -1,3 +1,37 @@
+// Task State management
+var TaskState = /** @class */ (function () {
+    function TaskState() {
+        this.listeners = [];
+        this.tasks = [];
+    }
+    TaskState.getInstance = function () {
+        if (this.instance) {
+            return this.instance;
+        }
+        this.instance = new TaskState();
+        return this.instance;
+    };
+    TaskState.prototype.addListener = function (listenerFunc) {
+        this.listeners.push(listenerFunc);
+    };
+    TaskState.prototype.addTask = function (title, description, dueDate) {
+        var singleTask = {
+            id: new Date().getTime(),
+            title: title,
+            description: description,
+            dueDate: dueDate
+        };
+        this.tasks.push(singleTask);
+        console.log(this.tasks);
+        for (var _i = 0, _a = this.listeners; _i < _a.length; _i++) {
+            var listenerFunction = _a[_i];
+            listenerFunction(this.tasks.slice());
+        }
+    };
+    return TaskState;
+}());
+var taskState = TaskState.getInstance();
+//verifyInput is used inside TaskInput class to check whether the task is valid before submitting
 function verifyInput(verifyObj) {
     var isValid = true;
     if (verifyObj.required) {
@@ -11,7 +45,7 @@ function verifyInput(verifyObj) {
     }
     return isValid;
 }
-// Create the TaskInput class
+// TaskInput class defines and renders the form for the task input
 var TaskInput = /** @class */ (function () {
     function TaskInput() {
         this.templateElement = document.getElementById('task-input');
@@ -22,8 +56,8 @@ var TaskInput = /** @class */ (function () {
         this.titleInput = this.element.querySelector('#title');
         this.descriptionInput = this.element.querySelector('#description');
         this.dateInput = this.element.querySelector('#date');
-        this.attachListeners();
         this.render();
+        this.attachListeners();
     }
     TaskInput.prototype.render = function () {
         var date = new Date();
@@ -65,7 +99,7 @@ var TaskInput = /** @class */ (function () {
             alert("Fill in all the fields or make sure min/max characters match the requirement.");
         }
         else {
-            console.log([taskName, taskDesc, taskDue]);
+            return [taskName, taskDesc, taskDue];
         }
     };
     TaskInput.prototype.resetInputFields = function () {
@@ -75,7 +109,11 @@ var TaskInput = /** @class */ (function () {
     };
     TaskInput.prototype.submitFormHandler = function (e) {
         e.preventDefault();
-        this.getTaskInput();
+        var taskInput = this.getTaskInput();
+        if (Array.isArray(taskInput)) {
+            var title = taskInput[0], description = taskInput[1], dueDate = taskInput[2];
+            taskState.addTask(title, description, dueDate);
+        }
         this.resetInputFields();
     };
     TaskInput.prototype.attachListeners = function () {
@@ -83,4 +121,44 @@ var TaskInput = /** @class */ (function () {
     };
     return TaskInput;
 }());
-var renderedForm = new TaskInput();
+// TaskList class
+var TaskList = /** @class */ (function () {
+    function TaskList(category) {
+        var _this = this;
+        this.category = category;
+        this.templateElement = document.getElementById('task-list');
+        this.hostElement = document.getElementById('app');
+        var importedTemplate = document.importNode(this.templateElement.content, true);
+        this.element = importedTemplate.firstElementChild;
+        this.element.id = this.category + "-tasks";
+        this.definedTasks = [];
+        taskState.addListener(function (tasks) {
+            _this.definedTasks = tasks;
+            _this.displayTasks();
+        });
+        this.render();
+        this.renderContent();
+    }
+    TaskList.prototype.displayTasks = function () {
+        var taskList = document.getElementById(this.category + "-task-list");
+        for (var _i = 0, _a = this.definedTasks; _i < _a.length; _i++) {
+            var taskItem = _a[_i];
+            var listItem = document.createElement('li');
+            listItem.textContent = taskItem.title;
+            taskList.appendChild(listItem);
+        }
+    };
+    TaskList.prototype.renderContent = function () {
+        var listId = this.category + "-task-list";
+        this.element.querySelector('ul').id = listId;
+        this.element.querySelector('h2').textContent = this.category.toUpperCase() + ' TASKS';
+    };
+    TaskList.prototype.render = function () {
+        this.hostElement.insertAdjacentElement('beforeend', this.element);
+    };
+    return TaskList;
+}());
+// Initializing the TaskInput class
+var taskInput = new TaskInput();
+var activeTasksList = new TaskList('active');
+var finishedTasksList = new TaskList('finished');

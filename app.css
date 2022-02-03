@@ -71,11 +71,12 @@ button:active {
 
 .tasks {
   margin: 1rem;
-  border: 1px solid #ff0062;
+  border: 1px solid #FF0000;
+  width: 70%;
 }
 
 .tasks header {
-  background: #ff0062;
+  background: #FF0000;
   height: 3.5rem;
   display: flex;
   justify-content: center;
@@ -83,11 +84,11 @@ button:active {
 }
 
 #finished-tasks {
-  border-color: #0044ff;
+  border-color: #739B2C;
 }
 
 #finished-tasks header {
-  background: #0044ff;
+  background: #739B2C;
 }
 
 .tasks h2 {

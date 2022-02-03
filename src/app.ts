@@ -1,3 +1,43 @@
+
+// Task State management
+   class TaskState {
+       private listeners: any[] = []
+       private tasks: any[] = [];
+       private static instance: TaskState;
+       private constructor () {
+        
+       }
+
+       static getInstance () {
+        if (this.instance) {
+            return this.instance;
+        }
+        this.instance = new TaskState();
+        return this.instance;
+       }
+
+       addListener (listenerFunc: Function) {
+           this.listeners.push(listenerFunc)
+       }
+
+       addTask (title: string, description: string, dueDate: string) {
+          const singleTask = {
+              id: new Date().getTime(),
+              title: title,
+              description: description,
+              dueDate: dueDate
+          }
+          this.tasks.push(singleTask);
+          console.log(this.tasks)
+          for ( let listenerFunction of this.listeners) {
+              listenerFunction(this.tasks.slice());
+          }
+       }
+   }
+
+   const taskState = TaskState.getInstance();
+
+// an interface for defining the structure of a task. It is used in verifyInput function
 interface Verify {
     value: string;
     required: boolean;
@@ -5,6 +45,7 @@ interface Verify {
     maxLength?: number;
 }
 
+//verifyInput is used inside TaskInput class to check whether the task is valid before submitting
 function verifyInput (verifyObj: Verify) {
         let isValid = true;
         if(verifyObj.required) {
@@ -18,7 +59,8 @@ function verifyInput (verifyObj: Verify) {
         }
         return isValid
  }
-// Create the TaskInput class
+
+ // TaskInput class defines and renders the form for the task input
 class TaskInput {
     templateElement: HTMLTemplateElement;
     hostElement: HTMLDivElement;
@@ -26,8 +68,10 @@ class TaskInput {
     titleInput: HTMLInputElement;
     descriptionInput: HTMLInputElement;
     dateInput: HTMLInputElement;
+  
 
     constructor () {
+      
         this.templateElement = <HTMLTemplateElement>document.getElementById('task-input')!;
         this.hostElement = <HTMLDivElement>document.getElementById('app')!;
 
@@ -38,13 +82,14 @@ class TaskInput {
         this.titleInput = this.element.querySelector('#title')! as HTMLInputElement;
         this.descriptionInput = this.element.querySelector('#description')! as HTMLInputElement;
         this.dateInput = this.element.querySelector('#date')! as HTMLInputElement;
-
+         this.render()
         this.attachListeners();
-        this.render();
+       
+        
     }
 
 
-    private render() {
+     render() {
         let date = new Date();
         function getCurrentMonth() {
             if(+(date.getMonth() + 1) < 10) {
@@ -79,14 +124,14 @@ class TaskInput {
            value: taskDue,
            required: true
       }
-       if(
+       if (
            !verifyInput(verifyName) ||
            !verifyInput(verifyDescription) ||
            !verifyInput(verifyDate)
         ) {
             alert("Fill in all the fields or make sure min/max characters match the requirement.")
         } else {
-            console.log([taskName, taskDesc, taskDue])
+            return [taskName, taskDesc, taskDue]
         }
     } 
 
@@ -97,7 +142,11 @@ class TaskInput {
     }
     private submitFormHandler (e: Event) {
        e.preventDefault();
-       this.getTaskInput();
+      const taskInput = this.getTaskInput();
+      if(Array.isArray(taskInput)) {
+          const [title, description, dueDate] = taskInput;
+          taskState.addTask(title, description, dueDate)
+      }
        this.resetInputFields();
       
     }
@@ -106,4 +155,50 @@ class TaskInput {
     }
 }
 
-const renderedForm = new TaskInput();
+
+// TaskList class
+ class TaskList {
+     templateElement: HTMLTemplateElement;
+     hostElement: HTMLDivElement;
+     element: HTMLElement;
+     definedTasks: any[];
+     constructor(private category: 'active' | 'finished') {
+        this.templateElement = <HTMLTemplateElement>document.getElementById('task-list')!;
+        this.hostElement = <HTMLDivElement>document.getElementById('app')!;
+        const importedTemplate = document.importNode(this.templateElement.content, true);
+        this.element = importedTemplate.firstElementChild as HTMLElement;
+        this.element.id = `${this.category}-tasks`;
+        this.definedTasks = [];
+        taskState.addListener((tasks: any[])=> {
+           this.definedTasks = tasks; 
+           this.displayTasks()
+        })
+        this.render();
+        this.renderContent();
+     }
+     
+     private displayTasks () {
+        const taskList = document.getElementById(`${this.category}-task-list`)! as HTMLUListElement;
+        for (let taskItem of this.definedTasks) {
+            const listItem = document.createElement('li');
+            listItem.textContent = taskItem.title;
+            taskList.appendChild(listItem)
+        }
+     }
+
+     private renderContent () {
+         const listId = `${this.category}-task-list`;
+         this.element.querySelector('ul')!.id = listId;
+         this.element.querySelector('h2')!.textContent = this.category.toUpperCase() + ' TASKS';
+     }
+
+     private render () {
+        this.hostElement.insertAdjacentElement('beforeend', this.element)
+     }
+ }
+
+// Initializing the TaskInput class
+const taskInput = new TaskInput();
+const activeTasksList = new TaskList('active');
+const finishedTasksList = new TaskList('finished');
+
