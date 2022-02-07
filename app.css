@@ -1,5 +1,6 @@
 * {
   box-sizing: border-box;
+  
 }
 
 html {
@@ -39,7 +40,8 @@ textarea:focus {
 
 #app {
  width: 100vw;
- height: 100%;
+ height: 100vh;
+ padding-bottom: 20px;
   display: flex;
   flex-direction: column;
  align-items: center;
@@ -71,6 +73,7 @@ button:active {
 
 .tasks {
   margin: 1rem;
+
   border: 1px solid #FF0000;
   width: 70%;
 }
