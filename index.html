@@ -29,8 +29,13 @@
         <button type="submit">ADD TASK</button>
       </form>
     </template>
-    <template id="single-project">
-      <li></li>
+
+    <template id="single-task">
+      <li draggable="true">
+        <h3></h3>
+        <h5></h5>
+        <p></p>
+      </li>
     </template>
 
     <template id="task-list">
@@ -38,6 +43,11 @@
         <header>
           <h2></h2>
         </header>
+         <div class = "list-header">
+          <h4>Task</h4>
+          <h4>Due date</h4>
+          <h4>Description</h4>
+         </div>
         <ul></ul>
       </section>
     </template>
@@ -46,6 +56,6 @@
     <div id="app">
       <h2>Task manager</h2>
     </div>
-    
+    <div class = 'bottom-div'></div>
   </body>
 </html>

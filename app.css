@@ -41,7 +41,7 @@ textarea:focus {
 #app {
  width: 100vw;
  height: 100vh;
- padding-bottom: 20px;
+ margin-bottom: 50px;
   display: flex;
   flex-direction: column;
  align-items: center;
@@ -52,6 +52,11 @@ textarea:focus {
  width: 60%;
 }
 
+#app h2 {
+  padding: 0;
+  margin: 5px;
+}
+
 button {
   font: inherit;
   background: #1A5684;
@@ -59,6 +64,18 @@ button {
   cursor: pointer;
   color: white;
   padding: 0.75rem 1rem;
+}
+
+.remove-button {
+  font: iherit;
+  font-size: 0.8rem;
+  background: #1A5684;
+  border: 1px solid #1A5684;
+  cursor: pointer;
+  color: white;
+  padding: 0.5rem;
+  margin-left: 15px;
+  border-radius: 5px;
 }
 
 button:focus {
@@ -73,7 +90,6 @@ button:active {
 
 .tasks {
   margin: 1rem;
-
   border: 1px solid #FF0000;
   width: 70%;
 }
@@ -84,10 +100,43 @@ button:active {
   display: flex;
   justify-content: center;
   align-items: center;
+  
 }
 
 #finished-tasks {
   border-color: #739B2C;
+}
+
+#active-task-list li {
+  display: grid;
+  grid-template-columns: 1fr 0.5fr 2fr;
+  column-gap: 5px;
+  align-items: center;
+  justify-items: center;
+}
+
+#active-task-list li h5 {
+  padding: 0.5rem;
+  text-align: center;
+}
+#active-task-list li p {
+  text-align: center;
+}
+
+#finished-task-list li {
+  display: grid;
+  grid-template-columns: 1fr 0.5fr 2fr;
+  column-gap: 5px;
+  align-items: center;
+  justify-items: center;
+}
+
+#finished-task-list li h5 {
+  padding: 0.5rem;
+  text-align: center;
+}
+#finished-task-list li p {
+  text-align: center;
 }
 
 #finished-tasks header {
@@ -105,29 +154,42 @@ button:active {
   padding: 1rem;
 }
 
+.list-header {
+  height: 30px;
+  margin-left: 1.2rem;
+  margin-right: 0.7rem;
+  margin-top: 0;
+  margin-bottom: 0;
+  display: grid;
+  grid-template-columns: 1fr 0.5fr 2fr;
+  column-gap: 5px;
+  row-gap: 5px;
+  align-items: center;
+  justify-items: center;
+
+}
+#list-header h4 {
+  padding: 0.3rem;
+}
 .tasks li {
   box-shadow: 1px 1px 8px rgba(0, 0, 0, 0.26);
-  padding: 1rem;
-  margin: 1rem;
+  margin-top: 0.5rem;
+  margin-bottom: 0;
+  background:white;
 }
 
-.tasks li h2 {
+.tasks li h3 {
   color: #ff0062;
   margin: 0.5rem 0;
+  font-size: 1rem;
+  padding: 0.5rem;
 }
 
 #finished-tasks li h2 {
   color: #0044ff;
 }
 
-.tasks li h3 {
-  color: #575757;
-  font-size: 1rem;
-}
 
-.task li p {
-  margin: 0;
-}
 
 .droppable {
   background: #ffe3ee;
@@ -154,3 +216,8 @@ button:active {
   margin: 0;
   padding: 0;
 }
+
+.bottom-div {
+  height: 10px;
+}
+

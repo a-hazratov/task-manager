@@ -13,6 +13,15 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
+var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
+    if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
+        if (ar || !(i in from)) {
+            if (!ar) ar = Array.prototype.slice.call(from, 0, i);
+            ar[i] = from[i];
+        }
+    }
+    return to.concat(ar || Array.prototype.slice.call(from));
+};
 // Task type
 var TaskStatus;
 (function (TaskStatus) {
@@ -29,10 +38,22 @@ var Task = /** @class */ (function () {
     }
     return Task;
 }());
-var TaskState = /** @class */ (function () {
-    function TaskState() {
+// Base class for TaskState
+var State = /** @class */ (function () {
+    function State() {
         this.listeners = [];
-        this.tasks = [];
+    }
+    State.prototype.addListener = function (listenerFunction) {
+        this.listeners.push(listenerFunction);
+    };
+    return State;
+}());
+var TaskState = /** @class */ (function (_super) {
+    __extends(TaskState, _super);
+    function TaskState() {
+        var _this = _super.call(this) || this;
+        _this.tasks = [];
+        return _this;
     }
     TaskState.getInstance = function () {
         if (this.instance) {
@@ -41,20 +62,36 @@ var TaskState = /** @class */ (function () {
         this.instance = new TaskState();
         return this.instance;
     };
-    TaskState.prototype.addListener = function (listenerFunction) {
-        this.listeners.push(listenerFunction);
-    };
     TaskState.prototype.addTask = function (title, description, dueDate) {
         var singleTask = new Task(new Date().getTime().toString(), title, description, dueDate, TaskStatus.Active);
         this.tasks.push(singleTask);
         console.log(this.tasks);
+        this.updateListeners();
+    };
+    TaskState.prototype.moveTask = function (taskId, newStatus) {
+        var task = this.tasks.find(function (eachTask) { return eachTask.id === taskId; });
+        console.log(this.tasks);
+        if (task) {
+            task.status = newStatus;
+            this.updateListeners();
+        }
+    };
+    TaskState.prototype.removeTasks = function () {
+        console.log("Remove-button is clicked");
+        console.log(this.tasks);
+        var clonedTasks = __spreadArray([], this.tasks, true);
+        var onlyActiveTasks = clonedTasks.filter(function (item) { return item.status === TaskStatus.Active; });
+        this.tasks = onlyActiveTasks;
+        this.updateListeners();
+    };
+    TaskState.prototype.updateListeners = function () {
         for (var _i = 0, _a = this.listeners; _i < _a.length; _i++) {
             var listenerFunction = _a[_i];
             listenerFunction(this.tasks.slice());
         }
     };
     return TaskState;
-}());
+}(State));
 var taskState = TaskState.getInstance();
 //verifyInput is used inside TaskInput class to check whether the task is valid before submitting
 function verifyInput(verifyObj) {
@@ -106,7 +143,8 @@ var TaskInput = /** @class */ (function (_super) {
         var verifyName = {
             value: taskName,
             required: true,
-            minLength: 5
+            minLength: 5,
+            maxLength: 50
         };
         var verifyDescription = {
             value: taskDesc,
@@ -151,11 +189,33 @@ var TaskInput = /** @class */ (function (_super) {
     return TaskInput;
 }(BaseComponent));
 // TaskItem class
-var TaskItem = /** @class */ (function () {
-    function TaskItem() {
+var TaskItem = /** @class */ (function (_super) {
+    __extends(TaskItem, _super);
+    function TaskItem(hostId, task) {
+        var _this = _super.call(this, 'single-task', hostId, false, task.id) || this;
+        _this.task = task;
+        _this.renderContent();
+        _this.addListeners();
+        return _this;
     }
+    TaskItem.prototype.dragStart = function (event) {
+        event.dataTransfer.setData('text/plain', this.task.id);
+        event.dataTransfer.effectAllowed = 'move';
+    };
+    TaskItem.prototype.dragEnd = function (_) {
+    };
+    TaskItem.prototype.addListeners = function () {
+        this.element.addEventListener('dragstart', this.dragStart.bind(this));
+        this.element.addEventListener('dragend', this.dragEnd.bind(this));
+    };
+    TaskItem.prototype.displayTasks = function () { };
+    TaskItem.prototype.renderContent = function () {
+        this.element.querySelector('h3').textContent = this.task.title;
+        this.element.querySelector('h5').textContent = this.task.dueDate;
+        this.element.querySelector('p').textContent = this.task.description;
+    };
     return TaskItem;
-}());
+}(BaseComponent));
 // TaskList class
 var TaskList = /** @class */ (function (_super) {
     __extends(TaskList, _super);
@@ -163,6 +223,46 @@ var TaskList = /** @class */ (function (_super) {
         var _this = _super.call(this, 'task-list', 'app', false, category + "-tasks") || this;
         _this.category = category;
         _this.definedTasks = [];
+        _this.renderContent();
+        _this.addListeners();
+        return _this;
+    }
+    TaskList.prototype.displayTasks = function () {
+        var taskList = document.getElementById(this.category + "-task-list");
+        taskList.innerHTML = '';
+        for (var _i = 0, _a = this.definedTasks; _i < _a.length; _i++) {
+            var taskItem = _a[_i];
+            new TaskItem(this.element.querySelector('ul').id, taskItem);
+        }
+    };
+    TaskList.prototype.renderContent = function () {
+        var listId = this.category + "-task-list";
+        this.element.querySelector('ul').id = listId;
+        this.element.querySelector('h2').textContent = this.category.toUpperCase() + ' TASKS';
+        if (listId === 'finished-task-list') {
+            var button = document.createElement('button');
+            button.classList.add('remove-button');
+            button.innerHTML = "Remove tasks";
+            var header = this.element.getElementsByTagName('header');
+            header[0].appendChild(button);
+        }
+    };
+    TaskList.prototype.dragOver = function (event) {
+        if (event.dataTransfer && event.dataTransfer.types[0] === 'text/plain') {
+            event.preventDefault();
+        }
+    };
+    TaskList.prototype.dragDrop = function (event) {
+        var taskId = event.dataTransfer.getData('text/plain'); // getting the task id from dataTransfer
+        taskState.moveTask(taskId, this.category === 'active' ? TaskStatus.Active : TaskStatus.Finished);
+    };
+    TaskList.prototype.dragLeave = function (_) {
+    };
+    TaskList.prototype.removeFinished = function () {
+        taskState.removeTasks();
+    };
+    TaskList.prototype.addListeners = function () {
+        var _this = this;
         taskState.addListener(function (tasks) {
             var filteredTasks = tasks.filter(function (item) {
                 if (_this.category === 'active') {
@@ -173,23 +273,11 @@ var TaskList = /** @class */ (function (_super) {
             _this.definedTasks = filteredTasks;
             _this.displayTasks();
         });
-        _this.renderContent();
-        return _this;
-    }
-    TaskList.prototype.displayTasks = function () {
-        var taskList = document.getElementById(this.category + "-task-list");
-        taskList.innerHTML = '';
-        for (var _i = 0, _a = this.definedTasks; _i < _a.length; _i++) {
-            var taskItem = _a[_i];
-            var listItem = document.createElement('li');
-            listItem.textContent = taskItem.title;
-            taskList.appendChild(listItem);
-        }
-    };
-    TaskList.prototype.renderContent = function () {
-        var listId = this.category + "-task-list";
-        this.element.querySelector('ul').id = listId;
-        this.element.querySelector('h2').textContent = this.category.toUpperCase() + ' TASKS';
+        this.element.addEventListener('dragover', this.dragOver.bind(this));
+        this.element.addEventListener('drop', this.dragDrop.bind(this));
+        this.element.addEventListener('dragleave', this.dragLeave.bind(this));
+        var removeButton = this.element.querySelector('.remove-button');
+        removeButton === null || removeButton === void 0 ? void 0 : removeButton.addEventListener('click', this.removeFinished.bind(this));
     };
     return TaskList;
 }(BaseComponent));

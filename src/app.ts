@@ -20,14 +20,22 @@
 
 
 // Task State management
-   type Listener = (items: Task[]) => void;
-  
-   class TaskState {
-       private listeners: Listener[] = []
+   type Listener<T> = (items: T[]) => void;
+
+// Base class for TaskState
+   class State<T> {
+       protected listeners: Listener<T>[] = []
+              addListener (listenerFunction: Listener<T>) {
+              this.listeners.push(listenerFunction)
+       } 
+   }
+
+
+   class TaskState extends State<Task> {
        private tasks: Task[] = [];
        private static instance: TaskState;
        private constructor () {
-        
+          super()
        }
 
        static getInstance () {
@@ -38,10 +46,6 @@
         return this.instance;
        }
 
-       addListener (listenerFunction: Listener) {
-           this.listeners.push(listenerFunction)
-       } 
-
        addTask (title: string, description: string, dueDate: string) {
           const singleTask = new Task(
               new Date().getTime().toString(),
@@ -50,12 +54,34 @@
               dueDate,
               TaskStatus.Active
           )
-          
           this.tasks.push(singleTask);
           console.log(this.tasks)
-          for ( let listenerFunction of this.listeners) {
-              listenerFunction(this.tasks.slice());
+          this.updateListeners();
+
+       }
+
+       moveTask (taskId: string, newStatus: TaskStatus) {
+          const task = this.tasks.find(eachTask => eachTask.id === taskId);
+          console.log(this.tasks)
+          if(task) {
+              task.status = newStatus;
+              this.updateListeners()
           }
+       }
+
+       removeTasks() {
+           console.log("Remove-button is clicked")
+           console.log(this.tasks)
+           const clonedTasks = [...this.tasks];
+           const onlyActiveTasks = clonedTasks.filter(item => item.status === TaskStatus.Active);
+           this.tasks = onlyActiveTasks;
+           this.updateListeners()
+       }
+
+       private updateListeners () {
+           for ( let listenerFunction of this.listeners) {
+               listenerFunction(this.tasks.slice());
+           }
        }
    }
 
@@ -141,7 +167,8 @@ class TaskInput extends BaseComponent<HTMLDivElement, HTMLFormElement>{
        const verifyName: Verify = {
          value: taskName,
          required: true,
-         minLength: 5
+         minLength: 5,
+         maxLength: 50, 
        };
        const verifyDescription: Verify = {
         value: taskDesc,
@@ -192,8 +219,34 @@ class TaskInput extends BaseComponent<HTMLDivElement, HTMLFormElement>{
 
 
 // TaskItem class
- class TaskItem {
+ class TaskItem extends BaseComponent<HTMLUListElement, HTMLLIElement> {
+     private task: Task;
+     constructor(hostId: string, task: Task ) {
+         super('single-task', hostId, false, task.id)
+         this.task = task;
+         this.renderContent();
+         this.addListeners()
+     }
      
+     dragStart(event: DragEvent) {
+         event.dataTransfer!.setData('text/plain', this.task.id);
+         event.dataTransfer!.effectAllowed = 'move';
+     }
+
+     dragEnd(_: DragEvent) {
+     }
+
+     addListeners() {
+         this.element.addEventListener('dragstart', this.dragStart.bind(this))
+         this.element.addEventListener('dragend', this.dragEnd.bind(this))
+     }
+
+     displayTasks(): void { }
+     renderContent(): void {
+         this.element.querySelector('h3')!.textContent = this.task.title;
+         this.element.querySelector('h5')!.textContent = this.task.dueDate;
+         this.element.querySelector('p')!.textContent = this.task.description;
+     }
  }
 
 // TaskList class
@@ -202,6 +255,53 @@ class TaskInput extends BaseComponent<HTMLDivElement, HTMLFormElement>{
      constructor(private category: 'active' | 'finished') {
          super('task-list', 'app', false, `${category}-tasks`)
         this.definedTasks = [];
+        this.renderContent();
+        this.addListeners();
+     }
+     
+    displayTasks () {
+        const taskList = document.getElementById(`${this.category}-task-list`)! as HTMLUListElement;
+        taskList.innerHTML = '';
+        for (let taskItem of this.definedTasks) {
+            new TaskItem(this.element.querySelector('ul')!.id, taskItem)
+        }
+     }
+
+    renderContent () {
+         const listId = `${this.category}-task-list`;
+         this.element.querySelector('ul')!.id = listId;
+         this.element.querySelector('h2')!.textContent = this.category.toUpperCase() + ' TASKS';
+         if(listId === 'finished-task-list') {
+             const button = document.createElement('button');
+             button.classList.add('remove-button');
+             button.innerHTML = "Remove tasks";
+             const header = this.element.getElementsByTagName('header');
+             header[0].appendChild(button)
+         }
+     }
+
+     dragOver(event: DragEvent) {
+         if (event.dataTransfer && event.dataTransfer.types[0] === 'text/plain') {
+             event.preventDefault();
+           
+
+         }
+     }
+
+     dragDrop(event: DragEvent) {
+        const taskId = event.dataTransfer!.getData('text/plain') // getting the task id from dataTransfer
+        taskState.moveTask(taskId, this.category === 'active' ? TaskStatus.Active : TaskStatus.Finished);
+     }
+
+     dragLeave(_: DragEvent) {
+        
+     }
+
+     removeFinished() {
+         taskState.removeTasks()
+     }
+
+     addListeners() {
         taskState.addListener((tasks: Task[])=> {
             const filteredTasks = tasks.filter(item => {
                 if(this.category === 'active') {
@@ -212,23 +312,11 @@ class TaskInput extends BaseComponent<HTMLDivElement, HTMLFormElement>{
            this.definedTasks = filteredTasks; 
            this.displayTasks()
         })
-        this.renderContent();
-     }
-     
-    displayTasks () {
-        const taskList = document.getElementById(`${this.category}-task-list`)! as HTMLUListElement;
-        taskList.innerHTML = '';
-        for (let taskItem of this.definedTasks) {
-            const listItem = document.createElement('li');
-            listItem.textContent = taskItem.title;
-            taskList.appendChild(listItem)
-        }
-     }
-
-    renderContent () {
-         const listId = `${this.category}-task-list`;
-         this.element.querySelector('ul')!.id = listId;
-         this.element.querySelector('h2')!.textContent = this.category.toUpperCase() + ' TASKS';
+        this.element.addEventListener('dragover', this.dragOver.bind(this));
+        this.element.addEventListener('drop', this.dragDrop.bind(this));
+        this.element.addEventListener('dragleave', this.dragLeave.bind(this));
+        const removeButton = this.element.querySelector('.remove-button');
+        removeButton?.addEventListener('click', this.removeFinished.bind(this))
      }
 
  }
