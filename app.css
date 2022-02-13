@@ -68,14 +68,15 @@ button {
 
 .remove-button {
   font: iherit;
-  font-size: 0.8rem;
+  font-size: 0.7rem;
   background: #1A5684;
   border: 1px solid #1A5684;
   cursor: pointer;
   color: white;
-  padding: 0.5rem;
-  margin-left: 15px;
+  padding: 0.3rem;
   border-radius: 5px;
+  position: absolute;
+  right: 5px;
 }
 
 button:focus {
@@ -100,6 +101,7 @@ button:active {
   display: flex;
   justify-content: center;
   align-items: center;
+  position: relative;
   
 }
 

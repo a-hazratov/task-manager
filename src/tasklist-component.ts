@@ -11,7 +11,7 @@ namespace App {
         super('task-list', 'app', false, `${category}-tasks`)
        this.definedTasks = [];
        this.renderContent();
-       this.addListeners();
+       this.addListeners();      
     }
     
    displayTasks () {
@@ -57,10 +57,13 @@ namespace App {
     }
 
     removeActiveFromList(e:any) {
-        console.log(e.target.id)
-        console.log("click fired")
-        taskState.removeActiveTask(e.target.id)
+        if (e.target.className === 'remove-active') {
+            const setId = e.target.parentNode.id;
+            taskState.removeActiveTask(setId)
+        }
+        
     }
+
 
     addListeners() {
        taskState.addListener((tasks: Task[])=> {
@@ -77,11 +80,10 @@ namespace App {
        this.element.addEventListener('drop', this.dragDrop.bind(this));
        this.element.addEventListener('dragleave', this.dragLeave.bind(this));
        const removeButton = this.element.querySelector('.remove-button');
-      
-       this.element.addEventListener('click', this.removeActiveFromList.bind(this))
+       this.element.getElementsByTagName('ul')[0].addEventListener('click', this.removeActiveFromList.bind(this))
        removeButton?.addEventListener('click', this.removeFinished.bind(this))
     }
 
-}
+ }
 
 }

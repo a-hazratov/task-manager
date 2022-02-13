@@ -113,7 +113,7 @@ class TaskInput extends BaseComponent<HTMLDivElement, HTMLFormElement>{
 
 }
 
-//Supplimentary code
+//Supplementary code
 
 /**
  *  let date = new Date();

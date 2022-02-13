@@ -15,17 +15,36 @@ type Listener<T> = (items: T[]) => void;
 export class TaskState extends State<Task> {
     private tasks: Task[] = [];
     private static instance: TaskState;
+    private taskStorage: string ='taskStorage'
     private constructor () {
        super()
+       this.createLocalStorage()
+       setTimeout(()=> {
+           this.updateListeners()
+       },0)
     }
+    
+    createLocalStorage () {
+        if(!localStorage[this.taskStorage]) {
+            localStorage[this.taskStorage] = JSON.stringify([])
+        } else if (localStorage[this.taskStorage]) {
+           console.log("Create local storage runs")
+           this.tasks = JSON.parse(localStorage.getItem(this.taskStorage)!)
+        
+        }
+    } 
 
     static getInstance () {
-     if (this.instance) {
+       if (this.instance) {
+           this.instance.createLocalStorage()
+         return this.instance;  
+       }
+         this.instance = new TaskState();
+         this.instance.createLocalStorage()
          return this.instance;
-     }
-     this.instance = new TaskState();
-     return this.instance;
     }
+    
+    
 
     addTask (title: string, description: string, dueDate: string) {
        const singleTask = new Task(
@@ -36,9 +55,8 @@ export class TaskState extends State<Task> {
            TaskStatus.Active
        )
        this.tasks.push(singleTask);
-       console.log(this.tasks)
+       localStorage[this.taskStorage] = JSON.stringify(this.tasks)
        this.updateListeners();
-
     }
 
     moveTask (taskId: string, newStatus: TaskStatus) {
@@ -46,6 +64,7 @@ export class TaskState extends State<Task> {
        console.log(this.tasks)
        if(task && task.status !== newStatus) {
            task.status = newStatus;
+           localStorage[this.taskStorage] = JSON.stringify(this.tasks)
            this.updateListeners()
        }
     }
@@ -54,6 +73,7 @@ export class TaskState extends State<Task> {
         const clonedTasks = [...this.tasks];
         const onlyActiveTasks = clonedTasks.filter(item => item.status === TaskStatus.Active);
         this.tasks = onlyActiveTasks;
+        localStorage[this.taskStorage] = JSON.stringify(this.tasks)
         this.updateListeners()
     }
 
@@ -61,10 +81,12 @@ export class TaskState extends State<Task> {
      const clonedTasks = [...this.tasks];
      const onlyActiveTasks = clonedTasks.filter(item => item.id !== id);
      this.tasks = onlyActiveTasks;
+     localStorage[this.taskStorage] = JSON.stringify(this.tasks)
      this.updateListeners()
     }
 
     private updateListeners () {
+        console.log("Update listeners runs")
         for ( let listenerFunction of this.listeners) {
             listenerFunction(this.tasks.slice());
         }
