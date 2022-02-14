@@ -28,7 +28,6 @@ export class TaskState extends State<Task> {
         if(!localStorage[this.taskStorage]) {
             localStorage[this.taskStorage] = JSON.stringify([])
         } else if (localStorage[this.taskStorage]) {
-           console.log("Create local storage runs")
            this.tasks = JSON.parse(localStorage.getItem(this.taskStorage)!)
         
         }
@@ -86,7 +85,6 @@ export class TaskState extends State<Task> {
     }
 
     private updateListeners () {
-        console.log("Update listeners runs")
         for ( let listenerFunction of this.listeners) {
             listenerFunction(this.tasks.slice());
         }
