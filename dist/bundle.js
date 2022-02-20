@@ -265,7 +265,9 @@ var App;
             this.resetInputFields();
         }
         attachSubmitFormHandler() {
-            this.hostElement.addEventListener('submit', this.submitFormHandler.bind(this));
+            console.log(this.hostElement);
+            console.log(this.element);
+            this.element.addEventListener('submit', this.submitFormHandler.bind(this));
         }
         displayTasks() {
         }

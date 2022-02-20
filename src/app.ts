@@ -94,7 +94,7 @@ class TaskInput extends BaseComponent<HTMLDivElement, HTMLFormElement>{
     }
 
     private attachSubmitFormHandler () {
-        this.hostElement.addEventListener('submit', this.submitFormHandler.bind(this))
+        this.element.addEventListener('submit', this.submitFormHandler.bind(this))
     }
     displayTasks(): void {
     }

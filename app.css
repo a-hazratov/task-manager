@@ -11,7 +11,19 @@ body {
   margin: 0;
   height: 100%;
 }
-
+.main-div {
+  background-color: #d6e1ff;
+}
+.footer {
+  height: 2rem;
+  width: 100%;
+  color: #f7f7f7;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 0.8rem;
+  background-color: #1A5684;
+}
 label,
 input,
 textarea {
